@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Somobay Business</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6f9;color:#243247}
+header{background:#075b46;color:white;padding:22px}
+header h2{margin:0}
+header p{margin:7px 0 0;color:#d5eee5}
+.container{padding:16px;max-width:1000px;margin:auto}
+h3{color:#075b46}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:white;padding:18px;border-radius:12px;box-shadow:0 2px 8px #0001}
+.card small{color:#667}
+.number{font-size:23px;font-weight:bold;margin-top:10px;color:#075b46}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+button{border:0;border-radius:8px;padding:11px 15px;background:#087456;color:white;cursor:pointer}
+button.active{background:#063e32}
+input{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccd5d9;border-radius:7px}
+.panel{background:white;padding:16px;border-radius:12px;margin-top:12px}
+.page{display:none}
+.page.active{display:block}
+.item{padding:12px;border-bottom:1px solid #eee}
+footer{text-align:center;padding:20px;color:#778}
+@media(min-width:650px){.cards{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header>
+<h2>Somobay Business</h2>
+<p>সমবায় ব্যবসা ব্যবস্থাপনা সিস্টেম</p>
+</header>
+
+<div class="container">
+<h3>Dashboard</h3>
+<div class="cards">
+<div class="card"><small>মোট সদস্য</small><div class="number" id="members">10</div></div>
+<div class="card"><small>মোট পণ্য</small><div class="number" id="products">0</div></div>
+<div class="card"><small>মোট ক্রয়</small><div class="number" id="purchases">৳0</div></div>
+<div class="card"><small>মোট বিক্রয়</small><div class="number" id="sales">৳0</div></div>
+</div>
+
+<nav>
+<button class="active" onclick="showPage('home',this)">Dashboard</button>
+<button onclick="showPage('member',this)">সদস্য</button>
+<button onclick="showPage('product',this)">পণ্য</button>
+<button onclick="showPage('purchase',this)">ক্রয়</button>
+<button onclick="showPage('sale',this)">বিক্রয়</button>
+<button onclick="showPage('expense',this)">খরচ</button>
+</nav>
+
+<section id="home" class="page active">
+<div class="panel">
+<h3>স্বাগতম!</h3>
+<p>Somobay Business অ্যাপে আপনাকে স্বাগতম।</p>
+<p>আপনার সমবায় ব্যবসার হিসাব এখানে পরিচালনা করুন।</p>
+</div>
+<div class="panel">
+<h3>সাম্প্রতিক কার্যক্রম</h3>
+<div id="activity">এখনো কোনো কার্যক্রম নেই।</div>
+</div>
+</section>
+
+<section id="member" class="page">
+<div class="panel">
+<h3>সদস্য তালিকা</h3>
+<input id="memberName" placeholder="সদস্যের নাম">
+<button onclick="addMember()">সদস্য যোগ করুন</button>
+<div id="memberList"></div>
+</div>
+</section>
+
+<section id="product" class="page">
+<div class="panel">
+<h3>পণ্য ব্যবস্থাপনা</h3>
+<input id="productName" placeholder="পণ্যের নাম">
+<input id="productPrice" type="number" placeholder="পণ্যের দাম">
+<button onclick="addProduct()">পণ্য যোগ করুন</button>
+<div id="productList"></div>
+</div>
+</section>
+
+<section id="purchase" class="page">
+<div class="panel">
+<h3>ক্রয়ের হিসাব</h3>
+<input id="purchaseName" placeholder="পণ্যের নাম">
+<input id="purchaseAmount" type="number" placeholder="ক্রয়ের টাকা">
+<button onclick="addTransaction('purchase')">ক্রয় সংরক্ষণ</button>
+<div id="purchaseList"></div>
+</div>
+</section>
+
+<section id="sale" class="page">
+<div class="panel">
+<h3>বিক্রয়ের হিসাব</h3>
+<input id="saleName" placeholder="পণ্যের নাম">
+<input id="saleAmount" type="number" placeholder="বিক্রয়ের টাকা">
+<button onclick="addTransaction('sale')">বিক্রয় সংরক্ষণ</button>
+<div id="saleList"></div>
+</div>
+</section>
+
+<section id="expense" class="page">
+<div class="panel">
+<h3>খরচের হিসাব</h3>
+<input id="expenseName" placeholder="খরচের বিবরণ">
+<input id="expenseAmount" type="number" placeholder="টাকার পরিমাণ">
+<button onclick="addTransaction('expense')">খরচ সংরক্ষণ</button>
+<div id="expenseList"></div>
+</div>
+</section>
+</div>
+
+<footer>© 2026 Somobay Business</footer>
+
+<script>
+const getData = key => JSON.parse(localStorage.getItem(key)||'[]');
+const saveData = (key,data) => localStorage.setItem(key,JSON.stringify(data));
+
+function showPage(id,btn){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+}
+
+function render(){
+let m=getData('membersData'),p=getData('productsData');
+let pu=getData('purchaseData'),s=getData('saleData'),e=getData('expenseData');
+document.getElementById('members').textContent=10+m.length;
+document.getElementById('products').textContent=p.length;
+document.getElementById('purchases').textContent='৳'+pu.reduce((a,x)=>a+x.amount,0);
+document.getElementById('sales').textContent='৳'+s.reduce((a,x)=>a+x.amount,0);
+document.getElementById('memberList').innerHTML=m.map(x=>`<div class="item">${x}</div>`).join('');
+document.getElementById('productList').innerHTML=p.map(x=>`<div class="item">${x.name} — ৳${x.price}</div>`).join('');
+['purchase','sale','expense'].forEach(k=>{
+document.getElementById(k+'List').innerHTML=getData(k+'Data').map(x=>`<div class="item">${x.name} — ৳${x.amount}</div>`).join('');
+});
+}
+
+function addMember(){
+let v=document.getElementById('memberName').value.trim();
+if(!v)return alert('নাম লিখুন');
+let d=getData('membersData');d.push(v);saveData('membersData',d);
+document.getElementById('memberName').value='';render();
+}
+function addProduct(){
+let n=document.getElementById('productName').value.trim();
+let price=Number(document.getElementById('productPrice').value);
+if(!n||price<=0)return alert('সঠিক তথ্য দিন');
+let d=getData('productsData');d.push({name:n,price});saveData('productsData',d);
+document.getElementById('productName').value='';
+document.getElementById('productPrice').value='';render();
+}
+function addTransaction(type){
+let n=document.getElementById(type+'Name').value.trim();
+let amount=Number(document.getElementById(type+'Amount').value);
+if(!n||amount<=0)return alert('সঠিক তথ্য দিন');
+let d=getData(type+'Data');d.push({name:n,amount});
+saveData(type+'Data',d);
+document.getElementById(type+'Name').value='';
+document.getElementById(type+'Amount').value='';
+render();
+}
+render();
+</script>
+</body>
+</html>
