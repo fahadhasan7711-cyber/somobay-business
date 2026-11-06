@@ -74,11 +74,13 @@ footer{text-align:center;padding:20px;color:#778}
 </div>
 </section>
 
-<section id="product" class="page">
+ <section id="product" class="page">
 <div class="panel">
 <h3>পণ্য ব্যবস্থাপনা</h3>
 <input id="productName" placeholder="পণ্যের নাম">
-<input id="productPrice" type="number" placeholder="পণ্যের দাম">
+<input id="productBuyPrice" type="number" placeholder="ক্রয়মূল্য">
+<input id="productSellPrice" type="number" placeholder="বিক্রয়মূল্য">
+<input id="productQty" type="number" placeholder="স্টকের পরিমাণ">
 <button onclick="addProduct()">পণ্য যোগ করুন</button>
 <div id="productList"></div>
 </div>
@@ -134,8 +136,7 @@ let pu=getData('purchaseData'),s=getData('saleData'),e=getData('expenseData');
 document.getElementById('members').textContent=m.length;
 document.getElementById('products').textContent=p.length;
 document.getElementById('purchases').textContent='৳'+pu.reduce((a,x)=>a+x.amount,0);
-document.getElementById('sales').textContent='৳'+s.reduce((a,x)=>a+x.amount,0);
-document.getElementById('memberList').innerHTML=m.map(x=>`<div class="item">${x}</div>`).join('');
+document.getElementById('productList').innerHTML=p.map(x=>'<div class="item">'+x.name+' | ক্রয়: ৳'+(x.buy||0)+' | বিক্রয়: ৳'+(x.sell||0)+' | স্টক: '+(x.qty||0)+'</div>').join('');
 document.getElementById('productList').innerHTML=p.map(x=>`<div class="item">${x.name} — ৳${x.price}</div>`).join('');
 ['purchase','sale','expense'].forEach(k=>{
 document.getElementById(k+'List').innerHTML=getData(k+'Data').map(x=>`<div class="item">${x.name} — ৳${x.amount}</div>`).join('');
@@ -148,14 +149,27 @@ if(!v)return alert('নাম লিখুন');
 let d=getData('membersData');d.push(v);saveData('membersData',d);
 document.getElementById('memberName').value='';render();
 }
+
 function addProduct(){
-let n=document.getElementById('productName').value.trim();
-let price=Number(document.getElementById('productPrice').value);
-if(!n||price<=0)return alert('সঠিক তথ্য দিন');
-let d=getData('productsData');d.push({name:n,price});saveData('productsData',d);
-document.getElementById('productName').value='';
-document.getElementById('productPrice').value='';render();
-}
+ let n=document.getElementById('productName').value.trim();
+ let buy=Number(document.getElementById('productBuyPrice').value);
+ let sell=Number(document.getElementById('productSellPrice').value);
+ let qty=Number(document.getElementById('productQty').value);
+
+ if(!n||buy<=0||sell<=0||qty<=0)
+ return alert('সঠিক তথ্য দিন');
+
+ let d=getData('productsData');
+ d.push({name:n,buy:buy,sell:sell,qty:qty});
+ saveData('productsData',d);
+
+ document.getElementById('productName').value='';
+ document.getElementById('productBuyPrice').value='';
+ document.getElementById('productSellPrice').value='';
+ document.getElementById('productQty').value='';
+ render();
+  }
+  
 function addTransaction(type){
 let n=document.getElementById(type+'Name').value.trim();
 let amount=Number(document.getElementById(type+'Amount').value);
