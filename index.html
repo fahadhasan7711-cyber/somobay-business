@@ -1,29 +1,29 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Somobay Business</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f3f6f9;color:#243247}
 header{background:#075b46;color:white;padding:22px}
 header h2{margin:0}
-header p{margin:7px 0 0}
+header p{margin:7px 0 0;color:#d5eee5}
 .container{padding:16px;max-width:1000px;margin:auto}
 h3{color:#075b46}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card,.panel{background:white;padding:16px;border-radius:12px;margin-top:12px;box-shadow:0 2px 8px #0001}
+.card{background:white;padding:18px;border-radius:12px;box-shadow:0 2px 8px #0001}
 .card small{color:#667}
 .number{font-size:23px;font-weight:bold;margin-top:10px;color:#075b46}
 nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
 button{border:0;border-radius:8px;padding:11px 15px;background:#087456;color:white;cursor:pointer}
 button.active{background:#063e32}
-input{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccd5d9;border-radius:7px}
+input,select{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccd5d9;border-radius:7px;background:white}
+.panel{background:white;padding:16px;border-radius:12px;margin-top:12px}
 .page{display:none}
 .page.active{display:block}
-.item{padding:12px;border-bottom:1px solid #eee;line-height:1.8}
+.item{padding:12px;border-bottom:1px solid #eee;line-height:1.7}
 footer{text-align:center;padding:20px;color:#778}
 @media(min-width:650px){.cards{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -43,8 +43,6 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="card"><small>মোট পণ্য</small><div class="number" id="products">0</div></div>
 <div class="card"><small>মোট ক্রয়</small><div class="number" id="purchases">৳0</div></div>
 <div class="card"><small>মোট বিক্রয়</small><div class="number" id="sales">৳0</div></div>
-<div class="card"><small>মোট খরচ</small><div class="number" id="expenses">৳0</div></div>
-<div class="card"><small>সম্ভাব্য লাভ</small><div class="number" id="profit">৳0</div></div>
 </div>
 
 <nav>
@@ -62,6 +60,10 @@ footer{text-align:center;padding:20px;color:#778}
 <p>Somobay Business অ্যাপে আপনাকে স্বাগতম।</p>
 <p>আপনার সমবায় ব্যবসার হিসাব এখানে পরিচালনা করুন।</p>
 </div>
+<div class="panel">
+<h3>সাম্প্রতিক কার্যক্রম</h3>
+<div id="activity">এখনো কোনো কার্যক্রম নেই।</div>
+</div>
 </section>
 
 <section id="member" class="page">
@@ -76,22 +78,20 @@ footer{text-align:center;padding:20px;color:#778}
 <section id="product" class="page">
 <div class="panel">
 <h3>পণ্য ব্যবস্থাপনা</h3>
-
 <label>পণ্যের নাম</label>
-<input id="productName" placeholder="পণ্যের নাম লিখুন">
-
-<label>ক্রয়মূল্য (টাকা)</label>
-<input id="productBuyPrice" type="number" min="0" placeholder="ক্রয়মূল্য">
-
-<label>বিক্রয়মূল্য (টাকা)</label>
-<input id="productSellPrice" type="number" min="0" placeholder="বিক্রয়মূল্য">
-
-<label>স্টকের পরিমাণ</label>
-<input id="productQty" type="number" min="1" placeholder="কত পিস">
-
+<input id="productName" placeholder="যেমন: চিনি">
+<label>ক্রয়মূল্য</label>
+<input id="productBuy" type="number" placeholder="ক্রয়মূল্য">
+<label>বিক্রয়মূল্য</label>
+<input id="productSell" type="number" placeholder="বিক্রয়মূল্য">
+<label>পরিমাণ</label>
+<input id="productQty" type="number" placeholder="পণ্যের পরিমাণ">
+<label>একক নির্বাচন করুন</label>
+<select id="productUnit">
+<option value="পিস">পিস</option>
+<option value="কেজি">কেজি</option>
+</select>
 <button onclick="addProduct()">পণ্য যোগ করুন</button>
-
-<h3>পণ্যের তালিকা</h3>
 <div id="productList"></div>
 </div>
 </section>
@@ -100,7 +100,7 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="panel">
 <h3>ক্রয়ের হিসাব</h3>
 <input id="purchaseName" placeholder="পণ্যের নাম">
-<input id="purchaseAmount" type="number" min="1" placeholder="ক্রয়ের টাকা">
+<input id="purchaseAmount" type="number" placeholder="ক্রয়ের টাকা">
 <button onclick="addTransaction('purchase')">ক্রয় সংরক্ষণ</button>
 <div id="purchaseList"></div>
 </div>
@@ -110,7 +110,7 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="panel">
 <h3>বিক্রয়ের হিসাব</h3>
 <input id="saleName" placeholder="পণ্যের নাম">
-<input id="saleAmount" type="number" min="1" placeholder="বিক্রয়ের টাকা">
+<input id="saleAmount" type="number" placeholder="বিক্রয়ের টাকা">
 <button onclick="addTransaction('sale')">বিক্রয় সংরক্ষণ</button>
 <div id="saleList"></div>
 </div>
@@ -120,7 +120,7 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="panel">
 <h3>খরচের হিসাব</h3>
 <input id="expenseName" placeholder="খরচের বিবরণ">
-<input id="expenseAmount" type="number" min="1" placeholder="টাকার পরিমাণ">
+<input id="expenseAmount" type="number" placeholder="টাকার পরিমাণ">
 <button onclick="addTransaction('expense')">খরচ সংরক্ষণ</button>
 <div id="expenseList"></div>
 </div>
@@ -130,121 +130,111 @@ footer{text-align:center;padding:20px;color:#778}
 <footer>© 2026 Somobay Business</footer>
 
 <script>
-function getData(key){
-try{
-let d=JSON.parse(localStorage.getItem(key)||'[]');
-return Array.isArray(d)?d:[];
-}catch(e){return [];}
-}
+const getData = key => JSON.parse(localStorage.getItem(key)||'[]');
+const saveData = (key,data) => localStorage.setItem(key,JSON.stringify(data));
 
-function saveData(key,data){
-localStorage.setItem(key,JSON.stringify(data));
-}
-
-function safe(value){
-return String(value??'').replace(/[&<>"']/g,c=>({
-'&':'&amp;','<':'&lt;','>':'&gt;',
-'"':'&quot;',"'":'&#39;'
-}[c]));
+function escapeHTML(value){
+ return String(value??'').replace(/[&<>"']/g,c=>({
+ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ }[c]));
 }
 
 function showPage(id,btn){
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-btn.classList.add('active');
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
 }
 
 function render(){
-let m=getData('membersData');
-let p=getData('productsData');
-let pu=getData('purchaseData');
-let s=getData('saleData');
-let e=getData('expenseData');
+ let m=getData('membersData');
+ let p=getData('productsData');
+ let pu=getData('purchaseData');
+ let s=getData('saleData');
 
-let totalPurchase=pu.reduce((a,x)=>a+Number(x.amount||0),0);
-let totalSale=s.reduce((a,x)=>a+Number(x.amount||0),0);
-let totalExpense=e.reduce((a,x)=>a+Number(x.amount||0),0);
+ document.getElementById('members').textContent=m.length;
+ document.getElementById('products').textContent=p.length;
+ document.getElementById('purchases').textContent='৳'+pu.reduce((a,x)=>a+Number(x.amount||0),0);
+ document.getElementById('sales').textContent='৳'+s.reduce((a,x)=>a+Number(x.amount||0),0);
 
-document.getElementById('members').textContent=m.length;
-document.getElementById('products').textContent=p.length;
-document.getElementById('purchases').textContent='৳'+totalPurchase;
-document.getElementById('sales').textContent='৳'+totalSale;
-document.getElementById('expenses').textContent='৳'+totalExpense;
-document.getElementById('profit').textContent='৳'+(totalSale-totalPurchase-totalExpense);
+ document.getElementById('memberList').innerHTML=m.map(x=>
+ `<div class="item">${escapeHTML(x)}</div>`).join('');
 
-document.getElementById('memberList').innerHTML=
-m.map(x=>'<div class="item">'+safe(x)+'</div>').join('');
+ document.getElementById('productList').innerHTML=p.map(x=>{
+ let buy=x.buy??x.price??0;
+ let sell=x.sell??0;
+ let qty=x.qty??0;
+ let unit=x.unit||'পিস';
+ return `<div class="item">
+ <b>${escapeHTML(x.name)}</b><br>
+ ক্রয়মূল্য: ৳${buy}<br>
+ বিক্রয়মূল্য: ৳${sell}<br>
+ মজুত: ${qty} ${escapeHTML(unit)}
+ </div>`;
+ }).join('');
 
-document.getElementById('productList').innerHTML=
-p.map(x=>{
-let name=typeof x==='string'?x:(x.name||'নাম নেই');
-let buy=Number(x.buy??x.price??0);
-let sell=Number(x.sell??0);
-let qty=Number(x.qty??0);
-return '<div class="item"><strong>'+safe(name)+'</strong><br>'+
-'ক্রয়মূল্য: ৳'+buy+'<br>'+
-'বিক্রয়মূল্য: ৳'+sell+'<br>'+
-'স্টক: '+qty+' পিস<br>'+
-'প্রতি পিস লাভ: ৳'+(sell-buy)+'</div>';
-}).join('');
+ ['purchase','sale','expense'].forEach(k=>{
+ document.getElementById(k+'List').innerHTML=getData(k+'Data').map(x=>
+ `<div class="item">${escapeHTML(x.name)} — ৳${Number(x.amount||0)}</div>`
+ ).join('');
+ });
 
-['purchase','sale','expense'].forEach(k=>{
-document.getElementById(k+'List').innerHTML=
-getData(k+'Data').map(x=>
-'<div class="item">'+safe(x.name)+' — ৳'+Number(x.amount||0)+'</div>'
-).join('');
-});
+ let recent=[];
+ ['purchase','sale','expense'].forEach(k=>{
+ getData(k+'Data').slice(-3).forEach(x=>{
+ recent.push(`${escapeHTML(x.name)} — ৳${Number(x.amount||0)}`);
+ });
+ });
+ document.getElementById('activity').innerHTML=recent.length?
+ recent.slice(-5).reverse().map(x=>`<div class="item">${x}</div>`).join(''):
+ 'এখনো কোনো কার্যক্রম নেই।';
 }
 
 function addMember(){
-let v=document.getElementById('memberName').value.trim();
-if(!v)return alert('সদস্যের নাম লিখুন');
-
-let d=getData('membersData');
-d.push(v);
-saveData('membersData',d);
-document.getElementById('memberName').value='';
-render();
+ let v=document.getElementById('memberName').value.trim();
+ if(!v)return alert('নাম লিখুন');
+ let d=getData('membersData');
+ d.push(v);
+ saveData('membersData',d);
+ document.getElementById('memberName').value='';
+ render();
 }
 
 function addProduct(){
-let n=document.getElementById('productName').value.trim();
-let buy=Number(document.getElementById('productBuyPrice').value);
-let sell=Number(document.getElementById('productSellPrice').value);
-let qty=Number(document.getElementById('productQty').value);
+ let n=document.getElementById('productName').value.trim();
+ let buy=Number(document.getElementById('productBuy').value);
+ let sell=Number(document.getElementById('productSell').value);
+ let qty=Number(document.getElementById('productQty').value);
+ let unit=document.getElementById('productUnit').value;
 
-if(!n||buy<=0||sell<=0||qty<=0){
-return alert('সব তথ্য সঠিকভাবে পূরণ করুন');
-}
+ if(!n||buy<=0||sell<=0||qty<=0){
+  return alert('সব তথ্য সঠিকভাবে পূরণ করুন');
+ }
 
-let d=getData('productsData');
-d.push({name:n,buy:buy,sell:sell,qty:qty});
-saveData('productsData',d);
+ let d=getData('productsData');
+ d.push({name:n,buy:buy,sell:sell,qty:qty,unit:unit});
+ saveData('productsData',d);
 
-document.getElementById('productName').value='';
-document.getElementById('productBuyPrice').value='';
-document.getElementById('productSellPrice').value='';
-document.getElementById('productQty').value='';
-
-render();
-alert('পণ্য সফলভাবে যোগ হয়েছে');
+ document.getElementById('productName').value='';
+ document.getElementById('productBuy').value='';
+ document.getElementById('productSell').value='';
+ document.getElementById('productQty').value='';
+ document.getElementById('productUnit').value='পিস';
+ render();
 }
 
 function addTransaction(type){
-let n=document.getElementById(type+'Name').value.trim();
-let amount=Number(document.getElementById(type+'Amount').value);
+ let n=document.getElementById(type+'Name').value.trim();
+ let amount=Number(document.getElementById(type+'Amount').value);
+ if(!n||amount<=0)return alert('সঠিক তথ্য দিন');
 
-if(!n||amount<=0)return alert('সঠিক তথ্য দিন');
+ let d=getData(type+'Data');
+ d.push({name:n,amount:amount});
+ saveData(type+'Data',d);
 
-let d=getData(type+'Data');
-d.push({name:n,amount:amount});
-saveData(type+'Data',d);
-
-document.getElementById(type+'Name').value='';
-document.getElementById(type+'Amount').value='';
-render();
-alert('হিসাব সংরক্ষণ হয়েছে');
+ document.getElementById(type+'Name').value='';
+ document.getElementById(type+'Amount').value='';
+ render();
 }
 
 render();
