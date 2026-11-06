@@ -37,11 +37,14 @@ footer{text-align:center;padding:20px;color:#778}
 
 <div class="container">
 <h3>Dashboard</h3>
+
 <div class="cards">
 <div class="card"><small>মোট সদস্য</small><div class="number" id="members">0</div></div>
 <div class="card"><small>মোট পণ্য</small><div class="number" id="products">0</div></div>
 <div class="card"><small>মোট ক্রয়</small><div class="number" id="purchases">৳0</div></div>
 <div class="card"><small>মোট বিক্রয়</small><div class="number" id="sales">৳0</div></div>
+<div class="card"><small>মোট খরচ</small><div class="number" id="expenses">৳0</div></div>
+<div class="card"><small>সম্ভাব্য লাভ</small><div class="number" id="profit">৳0</div></div>
 </div>
 
 <nav>
@@ -58,10 +61,6 @@ footer{text-align:center;padding:20px;color:#778}
 <h3>স্বাগতম!</h3>
 <p>Somobay Business অ্যাপে আপনাকে স্বাগতম।</p>
 <p>আপনার সমবায় ব্যবসার হিসাব এখানে পরিচালনা করুন।</p>
-</div>
-<div class="panel">
-<h3>সাম্প্রতিক কার্যক্রম</h3>
-<div id="activity">এখনো কোনো কার্যক্রম নেই।</div>
 </div>
 </section>
 
@@ -101,7 +100,7 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="panel">
 <h3>ক্রয়ের হিসাব</h3>
 <input id="purchaseName" placeholder="পণ্যের নাম">
-<input id="purchaseAmount" type="number" placeholder="ক্রয়ের টাকা">
+<input id="purchaseAmount" type="number" min="1" placeholder="ক্রয়ের টাকা">
 <button onclick="addTransaction('purchase')">ক্রয় সংরক্ষণ</button>
 <div id="purchaseList"></div>
 </div>
@@ -111,7 +110,7 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="panel">
 <h3>বিক্রয়ের হিসাব</h3>
 <input id="saleName" placeholder="পণ্যের নাম">
-<input id="saleAmount" type="number" placeholder="বিক্রয়ের টাকা">
+<input id="saleAmount" type="number" min="1" placeholder="বিক্রয়ের টাকা">
 <button onclick="addTransaction('sale')">বিক্রয় সংরক্ষণ</button>
 <div id="saleList"></div>
 </div>
@@ -121,7 +120,7 @@ footer{text-align:center;padding:20px;color:#778}
 <div class="panel">
 <h3>খরচের হিসাব</h3>
 <input id="expenseName" placeholder="খরচের বিবরণ">
-<input id="expenseAmount" type="number" placeholder="টাকার পরিমাণ">
+<input id="expenseAmount" type="number" min="1" placeholder="টাকার পরিমাণ">
 <button onclick="addTransaction('expense')">খরচ সংরক্ষণ</button>
 <div id="expenseList"></div>
 </div>
@@ -131,13 +130,23 @@ footer{text-align:center;padding:20px;color:#778}
 <footer>© 2026 Somobay Business</footer>
 
 <script>
-const getData = key => {
-try{return JSON.parse(localStorage.getItem(key)||'[]')}
-catch{return []}
-};
+function getData(key){
+try{
+let d=JSON.parse(localStorage.getItem(key)||'[]');
+return Array.isArray(d)?d:[];
+}catch(e){return [];}
+}
 
-const saveData = (key,data) =>
+function saveData(key,data){
 localStorage.setItem(key,JSON.stringify(data));
+}
+
+function safe(value){
+return String(value??'').replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;',
+'"':'&quot;',"'":'&#39;'
+}[c]));
+}
 
 function showPage(id,btn){
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -153,34 +162,45 @@ let pu=getData('purchaseData');
 let s=getData('saleData');
 let e=getData('expenseData');
 
+let totalPurchase=pu.reduce((a,x)=>a+Number(x.amount||0),0);
+let totalSale=s.reduce((a,x)=>a+Number(x.amount||0),0);
+let totalExpense=e.reduce((a,x)=>a+Number(x.amount||0),0);
+
 document.getElementById('members').textContent=m.length;
 document.getElementById('products').textContent=p.length;
-document.getElementById('purchases').textContent='৳'+pu.reduce((a,x)=>a+Number(x.amount||0),0);
-document.getElementById('sales').textContent='৳'+s.reduce((a,x)=>a+Number(x.amount||0),0);
+document.getElementById('purchases').textContent='৳'+totalPurchase;
+document.getElementById('sales').textContent='৳'+totalSale;
+document.getElementById('expenses').textContent='৳'+totalExpense;
+document.getElementById('profit').textContent='৳'+(totalSale-totalPurchase-totalExpense);
 
 document.getElementById('memberList').innerHTML=
-m.map(x=>'<div class="item">'+x+'</div>').join('');
+m.map(x=>'<div class="item">'+safe(x)+'</div>').join('');
 
 document.getElementById('productList').innerHTML=
-p.map(x=>`
-<div class="item">
-<strong>${x.name}</strong><br>
-ক্রয়মূল্য: ৳${x.buy??x.price??0}<br>
-বিক্রয়মূল্য: ৳${x.sell??0}<br>
-স্টক: ${x.qty??0} পিস
-</div>`).join('');
+p.map(x=>{
+let name=typeof x==='string'?x:(x.name||'নাম নেই');
+let buy=Number(x.buy??x.price??0);
+let sell=Number(x.sell??0);
+let qty=Number(x.qty??0);
+return '<div class="item"><strong>'+safe(name)+'</strong><br>'+
+'ক্রয়মূল্য: ৳'+buy+'<br>'+
+'বিক্রয়মূল্য: ৳'+sell+'<br>'+
+'স্টক: '+qty+' পিস<br>'+
+'প্রতি পিস লাভ: ৳'+(sell-buy)+'</div>';
+}).join('');
 
 ['purchase','sale','expense'].forEach(k=>{
 document.getElementById(k+'List').innerHTML=
 getData(k+'Data').map(x=>
-'<div class="item">'+x.name+' — ৳'+x.amount+'</div>'
+'<div class="item">'+safe(x.name)+' — ৳'+Number(x.amount||0)+'</div>'
 ).join('');
 });
 }
 
 function addMember(){
 let v=document.getElementById('memberName').value.trim();
-if(!v)return alert('নাম লিখুন');
+if(!v)return alert('সদস্যের নাম লিখুন');
+
 let d=getData('membersData');
 d.push(v);
 saveData('membersData',d);
@@ -194,8 +214,9 @@ let buy=Number(document.getElementById('productBuyPrice').value);
 let sell=Number(document.getElementById('productSellPrice').value);
 let qty=Number(document.getElementById('productQty').value);
 
-if(!n||buy<=0||sell<=0||qty<=0)
+if(!n||buy<=0||sell<=0||qty<=0){
 return alert('সব তথ্য সঠিকভাবে পূরণ করুন');
+}
 
 let d=getData('productsData');
 d.push({name:n,buy:buy,sell:sell,qty:qty});
