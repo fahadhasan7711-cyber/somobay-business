@@ -131,7 +131,7 @@ btn.classList.add('active');
 function render(){
 let m=getData('membersData'),p=getData('productsData');
 let pu=getData('purchaseData'),s=getData('saleData'),e=getData('expenseData');
-document.getElementById('members').textContent=10+m.length;
+document.getElementById('members').textContent=m.length;
 document.getElementById('products').textContent=p.length;
 document.getElementById('purchases').textContent='৳'+pu.reduce((a,x)=>a+x.amount,0);
 document.getElementById('sales').textContent='৳'+s.reduce((a,x)=>a+x.amount,0);
